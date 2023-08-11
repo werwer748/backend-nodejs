@@ -1,0 +1,13 @@
+{
+  "name": "test-scripts",
+  "version": "1.0.0",
+  "scripts": {
+    "prehello": "echo 'PRE HELLO'",
+    "hello": "echo \"Hello World!\"",
+    "posthello": "echo 'POST HELLO'",
+    "test": "echo \"test World!\"",
+    "stop": "echo \"stop World!\"",
+    "start": "echo \"start World!\"",
+    "restart": "echo \"restart World!\""
+  }
+}
