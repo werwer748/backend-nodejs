@@ -7,4 +7,7 @@ module.exports = {
 
   // 3. ISO 날짜 문자열에서 날짜만 반환
   dateString: (isoString) => new Date(isoString).toLocaleDateString(),
+
+  // 객체를 문자열로 변환
+  stringify: (obj) => JSON.stringify(obj),
 };

@@ -1,6 +1,7 @@
 const express = require("express");
 const handlebars = require("express-handlebars");
 const path = require("path");
+const { ObjectId } = require("mongodb");
 
 const app = express();
 
@@ -43,7 +44,116 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/write", (req, res) => {
-  res.render("write", { title: "테스트 게시판" });
+  // 1. 글쓰기 페이지로 이동 mode는 create
+  res.render("write", { title: "테스트 게시판", mode: "create" });
+});
+
+// 2. 수정 페이지로 이동 mode는 modify(update)
+app.get("/modify/:id", async (req, res) => {
+  const { id } = req.params;
+  // console.log("id확인 ::: ", req);
+  // 3. getPostById() 함수를 사용해 게시글 정보를 가져옴
+  // const post = await postService.getPostById(collection, req.params.id);
+  const post = await postService.getPostById(collection, id);
+  console.log("post확인 ::: ", post);
+  res.render("write", { title: "테스트 게시판", mode: "modify", post });
+});
+
+// 4. 게시글 수정 API
+app.post("/modify/", async (req, res) => {
+  const { id, title, writer, password, content } = req.body;
+
+  if (!password) {
+    return res.status(400).send("패스워드가 없습니다.");
+  }
+
+  const post = {
+    title,
+    writer,
+    password,
+    content,
+    createdDt: new Date().toISOString(),
+  };
+
+  // 5. 업데이트 결과
+  const result = postService.updatePost(collection, id, post);
+  res.redirect(`/detail/${id}`);
+});
+
+// 게시글 삭제 API
+app.delete("/delete", async (req, res) => {
+  const { id, password } = req.body;
+  try {
+    // collection의 deleteOne()을 사용해 게시글 하나를 삭제
+    const result = await collection.deleteOne({ _id: ObjectId(id), password });
+    // 삭제 결과가 잘못된 경우
+    if (result.deletedCount !== 1) {
+      console.log("삭제 실패");
+      return res.json({ isSuccess: false });
+    }
+    return res.json({ isSuccess: true });
+  } catch (error) {
+    console.error(error);
+    return res.json({ isSuccess: false });
+  }
+});
+
+//댓글 추가
+app.post("/write-comment", async (req, res) => {
+  const { id, name, password, comment } = req.body;
+  // 게시글 정보
+  const post = await postService.getPostById(collection, id);
+
+  // 3. 게시글에 기존 댓글 리스트가 있으면 추가
+  if (post.comments) {
+    post.comments.push({
+      idx: post.comments.length + 1,
+      name,
+      password,
+      comment,
+      createdDt: new Date().toISOString(),
+    });
+  } else {
+    // 게시글에 댓글 정보가 없으면 리스트에 댓글 정보 추가
+    post.comments = [
+      {
+        idx: 1,
+        name,
+        password,
+        comment,
+        createdDt: new Date().toISOString(),
+      },
+    ];
+  }
+
+  postService.updatePost(collection, id, post);
+  return res.redirect(`/detail/${id}`);
+});
+
+// 댓글 삭제
+app.delete("/delete-comment", async (req, res) => {
+  const { id, idx, password } = req.body;
+
+  // 1. 게시글의 comments 안에 있는 특정 댓글 찾기
+  const post = await collection.findOne(
+    {
+      _id: ObjectId(id),
+      comments: { $elemMatch: { idx: parseInt(idx), password } },
+    },
+    postService.projectionOption
+  );
+
+  // 2. 데이터가 없으면 isSucces: false를 주고 종료
+  if (!post) {
+    return res.json({ isSuccess: false });
+  }
+
+  // 3. 댓글 번호가 idx 이외인 것만 comments에 다시 할당 후 저장
+  post.comments = post.comments.filter(
+    (comment) => comment.idx !== parseInt(idx)
+  );
+  postService.updatePost(collection, id, post);
+  return res.json({ isSuccess: true });
 });
 
 app.post("/write", async (req, res) => {
@@ -58,7 +168,31 @@ app.post("/write", async (req, res) => {
 app.get("/detail/:id", async (req, res) => {
   // 1. 게시글 정보 가져오기
   const result = await postService.getDetailPost(collection, req.params.id);
+  console.log("result확인 ::: ", result);
   res.render("detail", { title: "테스트 게시판", post: result.value });
+});
+
+app.post("/check-password", async (req, res) => {
+  try {
+    // 1. id, password 가져오기
+    console.log("check-password req.body ::: ", req.body);
+    const { id, password } = req.body;
+
+    // 2. postService의 getPostByIdAndPassword() 함수를 사용해 게시글 데이터 확인
+    const post = await postService.getPostByIdAndPassword(collection, {
+      id,
+      password,
+    });
+
+    // 3. 데이터가 있으면 isExist true, 없으면 false
+    if (!post) {
+      return res.status(404).json({ isExist: false });
+    } else {
+      return res.json({ isExist: true });
+    }
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 app.listen(3000, async () => {

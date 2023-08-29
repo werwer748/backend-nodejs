@@ -1,8 +1,14 @@
-<h1>[{{title}}] 글 작성</h1>
+<h1>[{{title}}] 글 {{#if (eq mode "create")}}작성{{else}}수정{{/if}}</h1>
 
 <div>
   <!-- 1. 글쓰기 폼-->
-  <form name="boardForm" method="post" action="/write">
+  <form name="boardForm" method="post" {{#if (eq mode "create")}}action="/write"
+  {{else}}action="/modify" {{/if}}>
+
+    <!-- 수정 모드인 때는 id값을 폼통해 전송 -->
+    {{#if (eq mode "modify")}}
+    <input type="hidden" name="id" value="{{post._id}}" />
+    {{/if}}
 
     <!-- 2. 제목 입력 칸 -->
     <div>
@@ -11,7 +17,7 @@
         type="text"
         name="title"
         placeholder="제목을 넣어주세요"
-        value=""
+        value="{{post.title}}"
       />
     </div>
     <!-- 3. 이름 입력 칸 -->
@@ -21,7 +27,7 @@
         type="text"
         name="writer"
         placeholder="이름을 넣어주세요"
-        value=""
+        value="{{post.writer}}"
         autocomplete="new-password"
       />
     </div>
@@ -44,12 +50,13 @@
         placeholder="본문"
         cols="50"
         rows="10"
-      ></textarea>
+      >{{post.content}}</textarea>
+      <br />
     </div>
 
     <!-- 6. 글쓰기 버튼 -->
     <div>
-      <button type="submit">글쓰기</button>
+      <button type="submit">저장</button>
       <button type="button" onclick="location.href='/'">취소</button>
     </div>
   </form>
