@@ -1,0 +1,36 @@
+### Create 유저 생성
+POST http://localhost:3000/user/create
+Content-type: application/json
+
+{
+    "username": "hugo",
+    "password": "123123",
+    "email": "hugo@naver.com"
+}
+
+
+### GetUser 유저 조회
+GET http://localhost:3000/user/getUser/hugo@naver.com
+
+### Update User 유저 정보 업데이트
+PUT http://localhost:3000/user/update/hugo@naver.com
+Content-Type: application/json
+
+{
+    "email": "hugo@naver.com",
+    "username": "zugo",
+    "password": "123456"
+}
+
+### Delete User 유저 삭제
+DELETE http://localhost:3000/user/delete/hugo@naver.com
+
+### 잘못된 이메일을 입력한 경우
+POST http://localhost:3000/user/create
+Content-type: application/json
+
+{
+    "username": "hugo",
+    "password": "123123",
+    "email": "hugo-no-email"
+}
