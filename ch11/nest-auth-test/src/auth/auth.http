@@ -1,0 +1,52 @@
+### 회원 가입
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+    "email": "hugo444@naver.com",
+    "password": "1234",
+    "username": "hugo"
+}
+
+### 로그인
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "email": "hugo444@naver.com",
+    "password": "1234"
+}
+
+### 로그인 2: LoginGuard
+POST http://localhost:3000/auth/login2
+Content-Type: application/json
+
+{
+    "email": "hugo444@naver.com",
+    "password": "1234"
+}
+
+### Guard 테스트
+GET http://localhost:3000/auth/test-guard
+
+### 로그인 3: 세션을 사용하는 로그인 테스트
+POST http://localhost:3000/auth/login3
+Content-Type: application/json
+
+{
+    "email": "hugo444@naver.com",
+    "password": "1234"
+}
+
+
+### 로그인 3: 세션을 사용하는 로그인 비밀번호 틀렸을 경우
+POST http://localhost:3000/auth/login3
+Content-Type: application/json
+
+{
+    "email": "hugo444@naver.com",
+    "password": "12341234"
+}
+
+### 페스포트 세션 로그인 인증이 성공하는지 테스트
+GET http://localhost:3000/auth/test-guard2
